@@ -1,9 +1,9 @@
 terraform {
   cloud {
-    organization = "Noelie_Tf_Cloud"
+    organization = "AWS_Training"
 
     workspaces {
-      name = "github-action"
+      name = "s3bucket"
     }
   }
 }
