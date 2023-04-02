@@ -1,17 +1,27 @@
 
-provider "aws" {
-    access_key = "AKIAQZ6VREOSUOSWJ6WT"
-    secret_key = "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"
-    region = "us-east-1"
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 4.0"
+    }
+  }
 }
-resource "aws_s3_bucket" "onebucket" {
-   bucket = "noelie1234567labakenk"
-   acl = "private"
-   versioning {
-      enabled = true
-   }
-   tags = {
-     Name = "Bucket1"
-     Environment = "Test"
-   }
+
+# Configure the AWS Provider
+provider "aws" {
+  region = "us-east-1"
+}
+resource "aws_s3_bucket" "b" {
+  bucket = "my-tf-test-bucket-2384103847123487"
+
+  tags = {
+    Name        = "My bucket"
+    Environment = "Dev"
+  }
+}
+
+resource "aws_s3_bucket_acl" "example" {
+  bucket = aws_s3_bucket.b.id
+  acl    = "private"
 }
