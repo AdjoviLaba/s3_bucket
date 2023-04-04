@@ -34,8 +34,8 @@ resource "aws_eks_cluster" "my_cluster" {
   role_arn = aws_iam_role_policy_attachment.eks_cluster.arn
 
   depends_on = [
-    aws_subnet.subnet_1a,
-    aws_subnet.subnet_1b
+    aws_subnet.subnet_1a.id,
+    aws_subnet.subnet_1b.id
   ]
 
   vpc_config {
@@ -44,26 +44,6 @@ resource "aws_eks_cluster" "my_cluster" {
       aws_subnet.subnet_1b.id
     ]
   }
-}
-
-resource "aws_iam_role_policy_attachment" "eks_cluster" {
-  policy_arn = aws_iam_policy.eks_cluster.arn
-  roles      = [aws_iam_role.eks_cluster.name]
-}
-
-resource "aws_iam_role" "eks_cluster" {
-  name = "eks-cluster"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Sid    = ""
-      Principal = {
-        Service = "eks.amazonaws.com"
-      }
-    }]
-  })
 }
 data "aws_eks_cluster" "my_cluster" {
   name = aws_eks_cluster.my_cluster.name
@@ -113,5 +93,24 @@ resource "aws_iam_policy" "eks_cluster" {
         Resource = aws_subnet.subnet_1b.arn
       },
     ]
+  })
+}
+resource "aws_iam_role_policy_attachment" "eks_cluster" {
+  policy_arn = aws_iam_policy.eks_cluster.arn
+  roles      = [aws_iam_role.eks_cluster.name]
+}
+
+resource "aws_iam_role" "eks_cluster" {
+  name = "eks-cluster"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Sid    = ""
+      Principal = {
+        Service = "eks.amazonaws.com"
+      }
+    }]
   })
 }
