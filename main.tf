@@ -18,9 +18,11 @@ resource "aws_vpc" "eks_vpc" {
 }
 
 resource "aws_subnet" "eks_subnet" {
+  count = 2
+  cidr_block = "10.0.${count.index + 1}.0/24"  # Specify different CIDR blocks for each subnet
+  availability_zone = "us-east-1a" # Specify different AZs for each subnet
   vpc_id = aws_vpc.eks_vpc.id
-  cidr_block = "10.0.1.0/24"
-  availability_zone = "us-east-1a"
+  
 }
 
 resource "aws_security_group" "eks_security_group" {
@@ -34,12 +36,20 @@ resource "aws_security_group" "eks_security_group" {
   }
 }
 
-resource "aws_eks_cluster" "eks_cluster" {
-  name = "eks-cluster"
-  role_arn = aws_iam_role.eks_cluster.arn
+resource "aws_eks_cluster" "my_cluster" {
+  name = "my-eks-cluster"
+  role_arn = aws_iam_role_policy_attachment.eks_cluster.arn
+
+  depends_on = [
+    aws_iam_role_policy_attachment.eks_cluster,
+  ]
+
+  depends_on = [
+    aws_iam_role_policy_attachment.eks_cluster,
+  ]
+
   vpc_config {
-    subnet_ids = [aws_subnet.eks_subnet.id]
-    security_group_ids = [aws_security_group.eks_security_group.id]
+    subnet_ids = aws_subnet.subnet_1.*.id  # Use all subnet IDs from subnet_1
   }
 }
 
