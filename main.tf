@@ -65,6 +65,10 @@ resource "aws_iam_role" "eks_cluster" {
     }]
   })
 }
+data "aws_eks_cluster" "my_cluster" {
+  name = aws_eks_cluster.my_cluster.name
+}
+
 resource "aws_iam_policy" "eks_cluster" {
   name = "eks-cluster-policy"
 
@@ -79,7 +83,7 @@ resource "aws_iam_policy" "eks_cluster" {
           "eks:UntagResource",
         ]
         Effect = "Allow"
-        Resource = "*"
+        Resource = data.aws_eks_cluster.my_cluster.arn
       },
       {
         Action = [
@@ -110,7 +114,4 @@ resource "aws_iam_policy" "eks_cluster" {
       },
     ]
   })
-  depends_on = [
-    aws_eks_cluster.my_cluster
-  ]
 }
