@@ -65,8 +65,49 @@ resource "aws_iam_role" "eks_cluster" {
     }]
   })
 }
+resource "aws_iam_policy" "eks_cluster" {
+  name = "eks-cluster-policy"
 
-resource "aws_iam_role_policy_attachment" "eks_cluster_policy_attachment" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role = aws_iam_role.eks-cluster.name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "eks:DescribeCluster",
+          "eks:ListClusters",
+          "eks:TagResource",
+          "eks:UntagResource",
+        ]
+        Effect = "Allow"
+        Resource = "*"
+      },
+      {
+        Action = [
+          "eks:CreateFargateProfile",
+          "eks:DeleteFargateProfile",
+          "eks:DescribeFargateProfile",
+          "eks:ListFargateProfiles",
+          "eks:UpdateFargateProfile",
+        ]
+        Effect = "Allow"
+        Resource = aws_eks_cluster.my_cluster.arn
+      },
+      {
+        Action = [
+          "ec2:DescribeSubnets",
+          "ec2:DescribeRouteTables",
+        ]
+        Effect = "Allow"
+        Resource = aws_subnet.subnet_1a.arn
+      },
+      {
+        Action = [
+          "ec2:DescribeSubnets",
+          "ec2:DescribeRouteTables",
+        ]
+        Effect = "Allow"
+        Resource = aws_subnet.subnet_1b.arn
+      },
+    ]
+  })
 }
