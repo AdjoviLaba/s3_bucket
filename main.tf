@@ -36,17 +36,6 @@ resource "aws_security_group" "eks_security_group" {
   }
 }
 
-resource "aws_eks_cluster" "my_cluster" {
-  name = "my-eks-cluster"
-  role_arn = aws_iam_role_policy_attachment.eks_cluster.arn
-
-  depends_on = [
-    aws_iam_role_policy_attachment.eks_cluster,
-  ]
-  vpc_config {
-    subnet_ids = aws_subnet.subnet_1.*.id  # Use all subnet IDs from subnet_1
-  }
-}
 
 resource "aws_iam_role" "eks_cluster" {
   name = "eks-cluster-role"
@@ -67,4 +56,16 @@ resource "aws_iam_role" "eks_cluster" {
 resource "aws_iam_role_policy_attachment" "eks_cluster_policy_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   role = aws_iam_role.eks_cluster.name
+}
+
+resource "aws_eks_cluster" "my_cluster" {
+  name = "my-eks-cluster"
+  role_arn = aws_iam_role_policy_attachment.eks_cluster.arn
+
+  depends_on = [
+    aws_iam_role_policy_attachment.eks_cluster,
+  ]
+  vpc_config {
+    subnet_ids = aws_subnet.subnet_1.*.id  # Use all subnet IDs from subnet_1
+  }
 }
