@@ -43,11 +43,6 @@ resource "aws_eks_cluster" "my_cluster" {
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster,
   ]
-
-  depends_on = [
-    aws_iam_role_policy_attachment.eks_cluster,
-  ]
-
   vpc_config {
     subnet_ids = aws_subnet.subnet_1.*.id  # Use all subnet IDs from subnet_1
   }
