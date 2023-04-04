@@ -110,4 +110,7 @@ resource "aws_iam_policy" "eks_cluster" {
       },
     ]
   })
+  depends_on = [
+    aws_eks_cluster.my_cluster
+  ]
 }
