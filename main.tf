@@ -28,12 +28,14 @@ data "aws_availability_zones" "available" {
 # e.g., Create subnets in the first two available availability zones
 
 resource "aws_subnet" "primary" {
+  vpc_id     = aws_vpc.main.id
   availability_zone = data.aws_availability_zones.available.names[0]
 
   # ...
 }
 
 resource "aws_subnet" "secondary" {
+  vpc_id     = aws_vpc.main.id
   availability_zone = data.aws_availability_zones.available.names[1]
 
   # ...
