@@ -12,223 +12,48 @@ terraform {
 provider "aws" {
   region = "us-east-1"
 }
-
-
-locals {
-  cluster_name = "my-eks-cluster" # Replace with your desired cluster name
-}
-
-resource "aws_eks_cluster" "this" {
-  name     = local.cluster_name
-  role_arn = aws_iam_role_policy_attachment.eks_cluster.arn
-
-  depends_on = [
-    aws_iam_role_policy_attachment.eks_cluster
-  ]
-
-  depends_on = [
-    aws_iam_role_policy_attachment.eks_cluster
-  ]
+resource "aws_eks_cluster" "eks_cluster" {
+  name     = "eks_cluster"
+  role_arn = aws_iam_role.example.arn
 
   vpc_config {
-    subnet_ids = aws_subnet.private.*.id
+    subnet_ids = [aws_subnet.example1.id, aws_subnet.example2.id]
   }
 
+  # Ensure that IAM Role permissions are created before and deleted after EKS Cluster handling.
+  # Otherwise, EKS will not be able to properly delete EKS managed EC2 infrastructure such as Security Groups.
   depends_on = [
-    aws_vpc.this,
-    aws_subnet.private
-  ]
-
-  depends_on = [
-    aws_eks_cluster_auth.this
+    aws_iam_role_policy_attachment.example-AmazonEKSClusterPolicy,
+    aws_iam_role_policy_attachment.example-AmazonEKSVPCResourceController,
   ]
 }
 
-resource "aws_iam_role_policy_attachment" "eks_cluster" {
-  policy_arn = aws_iam_policy.eks_cluster.arn
-  roles      = [aws_iam_role.eks_cluster.name]
-}
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    effect = "Allow"
 
-resource "aws_iam_role_policy_attachment" "eks_cluster_ro" {
-  policy_arn = aws_iam_policy.eks_cluster_ro.arn
-  roles      = [aws_iam_role.eks_cluster.name]
-}
+    principals {
+      type        = "Service"
+      identifiers = ["eks.amazonaws.com"]
+    }
 
-resource "aws_iam_role_policy_attachment" "eks_cluster_vpc" {
-  policy_arn = aws_iam_policy.eks_cluster_vpc.arn
-  roles      = [aws_iam_role.eks_cluster_vpc.name]
-}
-
-resource "aws_iam_policy_attachment" "eks_cluster_ingress_policy_attachment" {
-  policy_arn = aws_iam_policy.eks_cluster_ingress.arn
-  roles      = [aws_iam_role.eks_cluster.name]
-}
-
-resource "aws_iam_policy" "eks_cluster" {
-  name_prefix = local.cluster_name
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-
-    Statement = [
-      {
-        Action = [
-          "eks:DescribeCluster",
-          "eks:ListClusters",
-          "eks:AccessKubernetesApi"
-        ]
-
-        Effect = "Allow"
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_policy" "eks_cluster_ro" {
-  name_prefix = local.cluster_name
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-
-    Statement = [
-      {
-        Action = [
-          "eks:DescribeCluster",
-          "eks:ListClusters"
-        ]
-
-        Effect = "Allow"
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_policy" "eks_cluster_vpc" {
-  name_prefix = local.cluster_name
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-
-    Statement = [
-      {
-        Action = [
-          "ec2:DescribeVpcs",
-          "ec2:DescribeSubnets"
-        ]
-
-        Effect = "Allow"
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_policy" "eks_cluster_ingress" {
-  name_prefix = local.cluster_name
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-
-    Statement = [
-      {
-        Action = [
-          "ec2:AuthorizeSecurityGroupIngress",
-          "ec2:RevokeSecurityGroupIngress",
-          "ec2:CreateSecurityGroup",
-          "ec2:DeleteSecurityGroup",
-          "ec2:DescribeNetworkInterfaces",
-          "ec2:DescribeSecurityGroups",
-          "ec2:CreateTags",
-          "ec2:DescribeTags"
-        ]
-
-        Effect = "Allow"
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_vpc" "this" {
-  cidr_block = "10.0.0.0/16" # Replace with your desired VPC CIDR block
-
-  tags = {
-    Name = local.cluster_name
+    actions = ["sts:AssumeRole"]
   }
 }
 
-resource "aws_subnet" "private" {
-  count = 2 # Create 2 subnets, one in each AZ
-
-  cidr_block = "10.0.${count.index + 1}.0/24" # Replace with your desired subnet CIDR blocks
-  vpc_id     = aws_vpc.this.id
-
-  tags = {
-    Name = "${local.cluster_name}-private-${count.index + 1}"
-  }
+resource "aws_iam_role" "example" {
+  name               = "eks-cluster-example"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
-resource "aws_eks_cluster_auth" "this" {
-  name = aws_eks_cluster.this.name
-
-  depends_on = [
-    aws_eks_cluster.this
-  ]
+resource "aws_iam_role_policy_attachment" "example-AmazonEKSClusterPolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  role       = aws_iam_role.example.name
 }
 
-data "aws_availability_zones" "this" {
-  state = "available"
-}
-
-resource "aws_eks_cluster" "this" {
-  name     = local.cluster_name
-  role_arn = aws_iam_role_policy_attachment.eks_cluster.arn
-
-  depends_on = [
-    aws_iam_role_policy_attachment.eks_cluster
-  ]
-
-  vpc_config {
-    subnet_ids = aws_subnet.private.*.id
-  }
-
-  depends_on = [
-    aws_vpc.this,
-    aws_subnet.private
-  ]
-
-  depends_on = [
-    aws_eks_cluster_auth.this
-  ]
-
-  depends_on = [
-    aws_iam_role_policy_attachment.eks_cluster_ro,
-    aws_iam_role_policy_attachment.eks_cluster_vpc,
-    aws_iam_policy_attachment.eks_cluster_ingress_policy_attachment
-  ]
-
-  depends_on = [
-    aws_iam_policy.eks_cluster,
-    aws_iam_policy.eks_cluster_ro,
-    aws_iam_policy.eks_cluster_vpc,
-    aws_iam_policy.eks_cluster_ingress
-  ]
-}
-
-output "cluster_name" {
-  value = aws_eks_cluster.this.name
-}
-
-output "cluster_arn" {
-  value = aws_eks_cluster.this.arn
-}
-
-output "cluster_endpoint" {
-  value = aws_eks_cluster.this.endpoint
-}
-
-output "cluster_certificate_authority_data" {
-  value = aws_eks_cluster.this.certificate_authority.0.data
+# Optionally, enable Security Groups for Pods
+# Reference: https://docs.aws.amazon.com/eks/latest/userguide/security-groups-for-pods.html
+resource "aws_iam_role_policy_attachment" "example-AmazonEKSVPCResourceController" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSVPCResourceController"
+  role       = aws_iam_role.example.name
 }
