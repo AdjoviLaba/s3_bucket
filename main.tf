@@ -12,12 +12,38 @@ terraform {
 provider "aws" {
   region = "us-east-1"
 }
+
+resource "aws_vpc" "main" {
+    cidr_block = "10.0.0.0/16"
+    instance_tenancy = "default"
+    tags =  {
+        Name = "main"
+    }
+}
+# Declare the data source
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+# e.g., Create subnets in the first two available availability zones
+
+resource "aws_subnet" "primary" {
+  availability_zone = data.aws_availability_zones.available.names[0]
+
+  # ...
+}
+
+resource "aws_subnet" "secondary" {
+  availability_zone = data.aws_availability_zones.available.names[1]
+
+  # ...
+}
 resource "aws_eks_cluster" "eks_cluster" {
   name     = "eks_cluster"
   role_arn = aws_iam_role.example.arn
 
   vpc_config {
-    subnet_ids = [aws_subnet.example1.id, aws_subnet.example2.id]
+    subnet_ids = [aws_subnet.primary.id, aws_subnet.secondary.id]
   }
 
   # Ensure that IAM Role permissions are created before and deleted after EKS Cluster handling.
