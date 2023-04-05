@@ -30,6 +30,8 @@ data "aws_availability_zones" "available" {
 resource "aws_subnet" "primary" {
   vpc_id     = aws_vpc.main.id
   availability_zone = data.aws_availability_zones.available.names[0]
+   cidr_block = "10.0.1.0/24" # Specify the CIDR block for the primary subnet
+
 
   # ...
 }
@@ -37,6 +39,8 @@ resource "aws_subnet" "primary" {
 resource "aws_subnet" "secondary" {
   vpc_id     = aws_vpc.main.id
   availability_zone = data.aws_availability_zones.available.names[1]
+   cidr_block = "10.0.2.0/24" # Specify the CIDR block for the primary subnet
+
 
   # ...
 }
