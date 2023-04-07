@@ -3,7 +3,7 @@ terraform {
     organization = "Evironments"
 
     workspaces {
-      name = "s3bucket1"
+      name = "dev"
     }
   }
 }
