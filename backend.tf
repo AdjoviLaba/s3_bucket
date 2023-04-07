@@ -1,9 +1,9 @@
 terraform {
   cloud {
-    organization = "AWS_Training"
+    organization = "Environments"
 
     workspaces {
-      name = "workflow"
+      name = "${terraform.workspace}"
     }
   }
 }
