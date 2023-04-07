@@ -1,3 +1,0 @@
-variable "workspace" {
-  type    = string
-}
