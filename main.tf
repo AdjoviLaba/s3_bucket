@@ -16,8 +16,3 @@ resource "aws_eks_cluster" "example" {
     aws_iam_role_policy_attachment.example-AmazonEKSVPCResourceController,
   ]
 }
-
-
-output "kubeconfig-certificate-authority-data" {
-  value = aws_eks_cluster.example.certificate_authority[0].data
-}
