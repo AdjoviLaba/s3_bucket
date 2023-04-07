@@ -7,6 +7,9 @@ terraform {
     }
   }
 }
+locals {
+  workspace_name = "${terraform.workspace}"
+}
 
 # Configure the AWS Provider
 provider "aws" {

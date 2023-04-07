@@ -3,7 +3,7 @@ terraform {
     organization = "Environments"
 
     workspaces {
-      name = "${terraform.workspace}"
+      name = var.workspace
     }
   }
 }
