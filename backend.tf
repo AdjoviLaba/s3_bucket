@@ -1,6 +1,6 @@
 terraform {
   cloud {
-    organization = "Environments"
+    organization = "Evironments"
 
     workspaces {
       name = "dev"
